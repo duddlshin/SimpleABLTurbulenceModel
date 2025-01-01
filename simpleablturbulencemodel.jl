@@ -33,7 +33,7 @@ md"""
 
 # ╔═╡ b6eac708-a136-4cb8-90a0-1511fb62a829
 md"""
-In this notebook, we will learn turbulence is and how to write our first turbulence model for atmospheric flow!
+In this notebook, we will learn what turbulence is and how to write our first turbulence model for atmospheric flow!
 Turbulence models are an essential tool for accurately modeling flow in tons of applications! Any situation where we have fluid flow, we can model using computational fluid dynamics simulations! In this notebook, we will look at turbulence modeling in the context of atmospheric models.
 
 By the end of this notebook, you will have made a simplified version of a turbulence model that is used in a real weather forecasting model!
