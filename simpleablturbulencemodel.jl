@@ -37,6 +37,7 @@ In this notebook, we will learn what turbulence is and how to write our first tu
 Turbulence models are an essential tool for accurately modeling flow in tons of applications! Any situation where we have fluid flow, we can model using computational fluid dynamics simulations! In this notebook, we will look at turbulence modeling in the context of atmospheric models.
 
 By the end of this notebook, you will have made a simplified version of a turbulence model that is used in a real weather forecasting model!
+
 """
 
 # ╔═╡ 16213d95-eda1-4f56-bf8e-105fb56b9cde
@@ -232,7 +233,7 @@ md"""
 md"""
 We also need to define the initial conditions for the problem.
 But before we define them, I will explain what $u_G$ and $v_G$ are.
-The variables $u_G$ and $v_G$ are theoretical wind components that result from a balance between the earth spinning and pressure gradients high up in the air. 
+The variables $u_G$ and $v_G$ are theoretical wind components, called geostrophic winds, that result from a balance between the earth spinning and pressure gradients high up in the air. 
 
 
 """
@@ -265,14 +266,14 @@ You cannot solve differential equations without boundary conditions. These are t
 # ╔═╡ 8f2ab920-c1d4-44a8-9517-6088fd15770e
 md"""
 
-Right at the surface, the wind has to come to stop, right? 
+Right at the surface, the wind has to come to a stop, right? 
 
 So the lower boundary conditions are:
 
 $u_{bottom} = 0$
 $v_{bottom} = 0$
 
-As I mentioned above, up in the sky, the wind is dictated by balance bewteen the earth spinning and the pressure gradients. 
+As I mentioned above, up in the sky, the wind is dictated by balance between the earth spinning and the pressure gradients. 
 
 Therefore, the upper boundary conditions are: 
 
@@ -297,7 +298,7 @@ We will define some variables and technical settings that I've hidden away below
 # ╔═╡ 80689c95-175e-41e3-b68f-22daa2982983
 begin
 	# Variables
-	u_G = 8              # Geostrophic wind speed (x-component) (m/s)
+	u_G = 8               # Geostrophic wind speed (x-component) (m/s)
 	v_G = 0               # Geostrophic wind speed (y-component) (m/s)
 	Ω = 7.29e-5           # Angular speed of the Earth
 	ϕ = 57.05             # Latitude
@@ -313,10 +314,13 @@ begin
 	nz = 129                                      # Number of grid points
 	z = collect(range(0, stop=Lz, length=nz))     # The grid initialized
 	Δz = z[2] - z[1];                             # Grid-cell size 
+
+	println("Settings and variables")
 end
 
 # ╔═╡ a78da882-f05b-43bb-9c09-b9944827c69f
-function f(u,v,θ,νₜ,αₜ)
+function f(u::Array{FT, 1},v::Array{FT, 1},θ::Array{FT, 1},νₜ::Array{FT, 1},αₜ::Array{FT, 1}) where {FT <: AbstractFloat} 
+
 	# We'll use the chain rule here to compute the consecutive gradients 
 	∂uw_∂z = - ∂_∂𝑧(z,νₜ) .* ∂_∂𝑧(z,u) .- νₜ .* ∂²_∂𝑧²(z,u)
 	∂vw_∂z = - ∂_∂𝑧(z,νₜ) .* ∂_∂𝑧(z,v) .- νₜ .* ∂²_∂𝑧²(z,v)
@@ -435,7 +439,7 @@ end
 # ╔═╡ afbf4908-f785-4012-af2e-314a74f20612
 md"""
 #### 3.3 Yonsei University (YSU) model 
-(ACTUALLY USED IN A REAL WEATHER MODEL!)
+(ACTUALLY USED IN A WEATHER MODEL)
 """
 
 # ╔═╡ 0d4642c4-6ce5-41c0-b4b5-cd299ffdd4e9
@@ -450,7 +454,7 @@ It's designed to simulate various atmospheric conditions, including the followin
 
 3. Entrainment at the top of the boundary layer, where it interacts with the free atmosphere above.
 
-This is its formulation:
+This is the formulation:
 
 $\nu_t = k w_s z (1 - \frac{z}{h})^p$
 
@@ -468,7 +472,7 @@ begin
 		temp_vals = (1 .- z/height)               
 		temp_vals[z .> height] .= 0.0
 		νₜ = κ * ustar * z .* temp_vals.^2      # eddy viscosity formulation
-		νₜ[z .> height] .= 0.00001                # νₜ falls above boundary layer height
+		νₜ[z .> height] .= 0.00001                # νₜ falls above boundary-layer height
 		
 		return νₜ
 	end
@@ -514,18 +518,20 @@ First, choose your turbulence model:
 # ╔═╡ b7766664-aa81-48d2-8066-16a4a0160287
 begin 
 	# Decide the model (1. constant, 2. mixinglength, 3. ysu)
-	model = "mixinglength"
+	model = "ysu"
+
+	println("Model chosen: ", model)
 end
 
 # ╔═╡ 0062cc6c-c306-4619-a70d-c6b96116c082
 md"""
 In the case of the "constant" eddy viscosity model, test different values of "val1". 
 
-In the case of the "mixinglength" model, test "λ".
+In the case of the "mixinglength" model, test different values of "λ".
 
 Finally, in the case of the "ysu" model, try different "height" values.
 
-See how these parameters change predictions.
+See how these parameters change predictions of our QOIs.
 """
 
 # ╔═╡ 9f0a9b20-2253-4027-8efc-3b2184322062
@@ -548,7 +554,7 @@ end
 begin
 	# Main loop
 	for i = 1:nstep
-	
+		
 		# Apply boundary conditions
 		u,v,θ = boundary_conditions(u,v,θ)
 	
@@ -742,7 +748,7 @@ end
 
 # ╔═╡ aa958bd9-bf43-48c9-a55d-0a525b961223
 md"""
-##### And this is how turbulence modeling in atmospheric models enables useful predictions of the weather! 
+###### There are more details involved, of course, but this is essentially how turbulence modeling in atmospheric models enables useful weather predictions! 
 
 """
 
@@ -757,7 +763,7 @@ md"""
 # ╔═╡ d8c877e9-0fc9-434c-8cb1-7dfb6ab81554
 md"""
 ### Acknowledgement:
-- Professor Michael Howland, for his problem set on turbulence modeling that I take inspiration and simple models from.
+- Professor Michael Howland, for his class "Atmospheric Boundary Layer Flows and Wind Energy" and problem set on turbulence modeling, which provided the foundational material and inspiration for this notebook.
 - Dr. Baris Kale, for providing the opportunity for me to use the notebook to validate YSU results.
 
 """
@@ -1960,7 +1966,7 @@ version = "1.4.1+1"
 # ╠═ba5e58c5-0754-47d3-b27b-5162fb1b0e71
 # ╟─e0611b52-5e7f-463b-9296-a699b3fec0d6
 # ╟─352a053e-ad85-49e1-8379-d3e9d96bb90c
-# ╠═80689c95-175e-41e3-b68f-22daa2982983
+# ╟─80689c95-175e-41e3-b68f-22daa2982983
 # ╟─a2e596cb-7404-48d3-a558-6f6979c4b0c0
 # ╠═0eb53843-51a9-4cc5-b4d0-4b00a3a2555c
 # ╟─54f254b3-0b59-4aea-9e72-0c6631f93df2
