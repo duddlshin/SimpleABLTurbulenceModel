@@ -4,4 +4,4 @@ It is an introductory lesson designed for students who have little or no backgro
 
 Three eddy viscosity models are implemented: (1) constant eddy viscosity model, (2) mixing length eddy viscosity model, and (3) a simplified Yonsei University (YSU) model.
 
-All questions, comments, and feeback are welcome and may be addressed to: youngin@mit.edu.
+All questions, comments, and feedback are welcome and may be addressed to: youngin@mit.edu.
